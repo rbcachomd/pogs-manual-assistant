@@ -163,6 +163,9 @@ export default function Home() {
         </form>
         <p className="mx-auto max-w-3xl px-4 pb-2 text-[11px] text-muted">
           Reference aid only. The official, BOT-approved text of the manual prevails. Verify citations before acting.
+          <span className="block">
+            Developed by Richard Ronald B. Cacho, MD, MHA, Public Relations Officer (2026)
+          </span>
         </p>
       </footer>
     </div>
@@ -207,6 +210,11 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
       <p className="mt-6 text-xs text-muted">
         Questions outside the manual&apos;s scope will be declined rather than answered from general knowledge.
       </p>
+      <div className="mt-8 border-t border-line pt-4 text-xs text-muted">
+        Developed by <span className="font-medium text-fg">Richard Ronald B. Cacho, MD, MHA</span>
+        <br />
+        Public Relations Officer (2026), Philippine Obstetrical and Gynecological Society
+      </div>
     </section>
   );
 }

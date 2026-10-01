@@ -4,6 +4,8 @@ A public, citation-first RAG chatbot over the **POGS Administrative Manual 2026*
 
 Graded Mini Project 14.3, *Ship Your Own RAG* (AIM).
 
+**Developed by Richard Ronald B. Cacho, MD, MHA, Public Relations Officer (2026).**
+
 ## Architecture
 
 | Layer | Choice |
