@@ -5,7 +5,7 @@ import { CORPUS, RAG } from "@/lib/config";
 import { searchManual } from "@/lib/retrieval";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const SYSTEM = `You are the ${CORPUS.title} Assistant, a reference aid for members, officers, and secretariat staff of the Philippine Obstetrical and Gynecological Society (POGS).
 

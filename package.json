@@ -7,8 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "ingest": "tsx scripts/ingest.ts",
-    "eval": "tsx --conditions=react-server scripts/eval.ts"
+    "ingest": "tsx scripts/ingest.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.133",

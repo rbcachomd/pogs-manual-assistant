@@ -63,6 +63,11 @@ export default function Home() {
   });
   const busy = status === "submitted" || status === "streaming";
 
+  // Warm the server and vector index while the visitor reads the empty state.
+  useEffect(() => {
+    fetch("/api/health").catch(() => {});
+  }, []);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, status]);

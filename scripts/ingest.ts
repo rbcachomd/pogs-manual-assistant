@@ -1,27 +1,19 @@
 /**
- * Ingest the POGS Administrative Manual into Neon Postgres (pgvector).
+ * Parse and chunk the POGS Administrative Manual.
  *
- *   npm run ingest            # parse, chunk, embed, (re)load the table
- *   npm run ingest -- --dry   # parse + chunk only; writes corpus/chunks.preview.json
+ *   npm run ingest
  *
- * Expects the PDF at corpus/pogs-administrative-manual.pdf.
+ * Reads corpus/pogs-administrative-manual.pdf and writes corpus/chunks.json
+ * (id, section path, page range, text). Embedding and loading into Neon happen
+ * server-side on first use, see lib/seed.ts.
  */
-import "dotenv/config";
-import { config as loadEnv } from "dotenv";
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from "node:fs";
 import { extractText, getDocumentProxy } from "unpdf";
-import { embedMany } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { neon } from "@neondatabase/serverless";
-
-loadEnv({ path: ".env.local" });
 
 const PDF = "corpus/pogs-administrative-manual.pdf";
-const EMBED_MODEL = process.env.OPENAI_EMBEDDING_MODEL ?? "text-embedding-3-small";
 const TARGET = 1400; // characters (~350 tokens): small enough for precise citations
 const MAX = 2200;
 const OVERLAP = 200;
-const DRY = process.argv.includes("--dry");
 
 type Chunk = { section: string; pageStart: number; pageEnd: number; content: string };
 
@@ -72,6 +64,7 @@ function chunkPages(pages: string[]): Chunk[] {
     if (content.length > 60) chunks.push({ section: bufLabel || label(), pageStart: start, pageEnd: end, content });
     buf = keepOverlap ? content.slice(-OVERLAP).replace(/^\S*\s/, "… ") : "";
     bufLabel = keepOverlap ? label() : "";
+    start = end; // overlap text comes from the last page of the previous chunk
   };
   const add = (line: string, page: number) => {
     if (buf === "") { start = page; bufLabel = label(); }
@@ -128,52 +121,17 @@ async function main() {
   const data = new Uint8Array(readFileSync(PDF));
   const pdf = await getDocumentProxy(data);
   const { text, totalPages } = await extractText(pdf, { mergePages: false });
-  const chunks = chunkPages(text as string[]);
-  console.log(`Parsed ${totalPages} pages → ${chunks.length} chunks`);
+  const chunks = chunkPages(text as string[]).map((c, i) => ({ id: i + 1, ...c }));
+  const lens = chunks.map((c) => c.content.length);
+  console.log(`Parsed ${totalPages} pages → ${chunks.length} chunks (avg ${Math.round(lens.reduce((a, b) => a + b, 0) / lens.length)} chars, max ${Math.max(...lens)})`);
 
   // Publish the source so citations can deep-link to the page.
   mkdirSync("public/docs", { recursive: true });
   copyFileSync(PDF, "public/docs/pogs-administrative-manual.pdf");
 
-  writeFileSync("corpus/chunks.preview.json", JSON.stringify(chunks, null, 2));
-  if (DRY) {
-    const lens = chunks.map((c) => c.content.length);
-    console.log(`Dry run. avg ${Math.round(lens.reduce((a, b) => a + b, 0) / lens.length)} chars, max ${Math.max(...lens)}`);
-    return;
-  }
-
-  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL missing in .env.local");
-  const sql = neon(process.env.DATABASE_URL);
-  await sql`CREATE EXTENSION IF NOT EXISTS vector`;
-  await sql`DROP TABLE IF EXISTS manual_chunks`;
-  await sql`CREATE TABLE manual_chunks (
-    id SERIAL PRIMARY KEY,
-    section TEXT NOT NULL,
-    page_start INT NOT NULL,
-    page_end INT NOT NULL,
-    content TEXT NOT NULL,
-    embedding vector(1536) NOT NULL
-  )`;
-
-  const BATCH = 64;
-  for (let i = 0; i < chunks.length; i += BATCH) {
-    const batch = chunks.slice(i, i + BATCH);
-    // Prepend the heading so the vector carries its structural context.
-    const { embeddings } = await embedMany({
-      model: openai.textEmbeddingModel(EMBED_MODEL),
-      values: batch.map((c) => `${c.section}\n\n${c.content}`),
-    });
-    for (let j = 0; j < batch.length; j++) {
-      const c = batch[j];
-      await sql.query(
-        `INSERT INTO manual_chunks (section, page_start, page_end, content, embedding) VALUES ($1,$2,$3,$4,$5::vector)`,
-        [c.section, c.pageStart, c.pageEnd, c.content, `[${embeddings[j].join(",")}]`],
-      );
-    }
-    console.log(`Embedded ${Math.min(i + BATCH, chunks.length)}/${chunks.length}`);
-  }
-  await sql`CREATE INDEX ON manual_chunks USING hnsw (embedding vector_cosine_ops)`;
-  console.log("Done.");
+  // The app embeds and loads these into Neon on first use (lib/seed.ts).
+  writeFileSync("corpus/chunks.json", JSON.stringify(chunks, null, 1));
+  console.log("Wrote corpus/chunks.json");
 }
 
 main().catch((e) => {
