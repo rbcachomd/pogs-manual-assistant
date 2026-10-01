@@ -320,7 +320,7 @@ function AssistantMessage({
                   </div>
                   <details className="mt-1.5">
                     <summary className="cursor-pointer text-xs text-muted">
-                      {cited ? "Cited" : "Retrieved, not cited"} · relevance {Math.round(s.similarity * 100)}% · show excerpt
+                      {cited ? "Cited" : "Retrieved, not cited"} · {s.similarity > 0 ? `semantic match ${Math.round(s.similarity * 100)}%` : "keyword match"} · show excerpt
                     </summary>
                     <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-muted">{s.content}</p>
                   </details>

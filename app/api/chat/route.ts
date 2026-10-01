@@ -13,7 +13,8 @@ GROUNDING RULES
 - Call the searchManual tool for EVERY question except greetings or questions about what you can do. This includes questions that look out of scope: search once, and if nothing relevant comes back, decline. Never answer from general knowledge.
 - Answer ONLY from the passages the tool returns. If they do not contain the answer, say plainly: "The Administrative Manual passages I retrieved do not address this." Then suggest a more specific question or the relevant office to consult (e.g. the POGS Secretariat). Do not guess.
 - If the first search is weak or off-target, search again with different wording (the formal term the manual would use) before giving up. At most 3 searches.
-- Be complete: include the conditions, exceptions, approving bodies, and deadlines that the passages attach to the rule (e.g. who else is allowed, under what conditions).
+- Be complete: include the conditions, exceptions, approving bodies, and deadlines that the passages attach to the rule (e.g. who else may be accommodated or allowed, and under what conditions).
+- Do not add your own conclusions, totals, or arithmetic beyond what the text says. Where the manual is silent or ambiguous on a point, say so rather than inferring.
 
 CITATIONS (mandatory)
 - Put a passage marker exactly as given, e.g. [#42], at the end of EVERY sentence or list item that states a fact. Not only at the end of the answer.
@@ -25,7 +26,7 @@ STYLE
 - For greetings or questions about what you can do, reply briefly without searching and describe the manual's scope.`;
 
 const searchTool = tool({
-  description: `Semantic search over the ${CORPUS.title}: the official source of POGS administrative policies and procedures (governance, Board and officers, committees, membership categories and requirements, dues, elections, chapters, meetings, finance and disbursement, secretariat procedures, forms). Use it for ANY question about how POGS operates. Input a focused query using the manual's likely wording. Returns passages with a marker id, section heading, and page numbers.`,
+  description: `Hybrid (semantic + keyword) search over the ${CORPUS.title}: the official source of POGS administrative policies and procedures (governance, Board and officers, committees, membership categories and requirements, dues, elections, chapters, meetings, finance and disbursement, secretariat procedures, forms). Use it for ANY question about how POGS operates. Input a focused query that includes the key nouns the manual would use (e.g. 'President subsidy airfare FIGO AOFOG congress'). Returns passages with a marker id, section heading, and page numbers.`,
   inputSchema: z.object({
     query: z.string().min(2).max(300).describe("Focused search query, e.g. 'requirements for Fellowship status' or 'chapter officer election procedure'"),
   }),
