@@ -12,7 +12,8 @@ Graded Mini Project 14.3, *Ship Your Own RAG* (AIM).
 | LLM orchestration | Vercel AI SDK 5: `streamText` with a `searchManual` **tool call**, multi-step (`stopWhen: stepCountIs(5)`) |
 | Models | OpenAI `gpt-4.1-mini` (chat, temperature 0.1); `text-embedding-3-small` (1536-d) |
 | Vector store | Neon Postgres + pgvector, HNSW cosine index |
-| Corpus | 135-page PDF → 234 structure-aware chunks |
+| Corpus | 135-page PDF → 234 structure-aware chunks (`corpus/chunks.json`) |
+| Indexing | Self-seeding: on first request the server embeds the chunks and loads Neon; a content hash in `rag_meta` triggers re-indexing only when the corpus changes |
 
 **Request flow:** browser → `/api/chat` (server) → model decides to call `searchManual` → query embedded → top-K cosine search in Neon → passages (with marker, section path, pages) returned to the model → grounded answer streamed back with `[#id]` markers → UI renders them as numbered citations and a Sources panel.
 
@@ -38,15 +39,15 @@ Graded Mini Project 14.3, *Ship Your Own RAG* (AIM).
 ```bash
 npm install
 cp .env.example .env.local      # add OPENAI_API_KEY and DATABASE_URL
-npm run ingest -- --dry         # parse + chunk only (writes corpus/chunks.preview.json)
-npm run ingest                  # embed + load Neon
-npm run eval -- 3 6 10          # retrieval hit@K on 20 gold questions
-npm run dev
+npm run ingest                  # parse + chunk the PDF -> corpus/chunks.json
+npm run dev                     # first request embeds and loads Neon automatically
+# GET /api/health  -> readiness (builds the index on first call)
+# GET /api/eval?k=3,6,10 -> retrieval hit@K and MRR on 20 gold questions
 ```
 
 ## Deploy
 
-Import the repo in Vercel, then set `OPENAI_API_KEY` and `DATABASE_URL` for **Production** and **Preview**. Deploy, and verify in an incognito window.
+Import the repo in Vercel and set `OPENAI_API_KEY` and `DATABASE_URL` for **Production** and **Preview**. Deploy, then open `/api/health` once to build the index (about 30 seconds). Verify in an incognito window.
 
 ## Disclaimer
 
