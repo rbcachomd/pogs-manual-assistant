@@ -31,10 +31,11 @@ export async function searchManual(
   query: string,
   topK = RAG.topK,
   mode: RetrievalMode = (process.env.RAG_MODE as RetrievalMode) || "hybrid",
+  kwWeight = RAG.kwWeight,
 ): Promise<RetrievedChunk[]> {
   const sims = new Map<number, number>();
   const score = new Map<number, number>();
-  const add = (id: number, rank: number) => score.set(id, (score.get(id) ?? 0) + 1 / (RRF_K + rank));
+  const add = (id: number, rank: number, w = 1) => score.set(id, (score.get(id) ?? 0) + w / (RRF_K + rank));
 
   if (mode !== "keyword") {
     const [{ embedding }] = await Promise.all([
@@ -52,7 +53,7 @@ export async function searchManual(
     });
   }
   if (mode !== "vector") {
-    bm25Search(query, CANDIDATES).forEach((r, i) => add(r.id, i + 1));
+    bm25Search(query, CANDIDATES).forEach((r, i) => add(r.id, i + 1, mode === "keyword" ? 1 : kwWeight));
   }
 
   return [...score.entries()]
