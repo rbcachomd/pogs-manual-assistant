@@ -11,11 +11,11 @@ Graded Mini Project 14.3, *Ship Your Own RAG* (AIM).
 | Framework | Next.js 15 (App Router), deployed on Vercel |
 | LLM orchestration | Vercel AI SDK 5: `streamText` with a `searchManual` **tool call**, multi-step (`stopWhen: stepCountIs(5)`) |
 | Models | OpenAI `gpt-4.1-mini` (chat, temperature 0.1); `text-embedding-3-small` (1536-d) |
-| Vector store | Neon Postgres + pgvector, HNSW cosine index |
+| Retrieval | **Hybrid**: Neon Postgres + pgvector (HNSW, cosine) **plus** in-memory BM25, fused with weighted Reciprocal Rank Fusion (keyword weight 0.25), top-K = 8 |
 | Corpus | 135-page PDF → 234 structure-aware chunks (`corpus/chunks.json`) |
 | Indexing | Self-seeding: on first request the server embeds the chunks and loads Neon; a content hash in `rag_meta` triggers re-indexing only when the corpus changes |
 
-**Request flow:** browser → `/api/chat` (server) → model decides to call `searchManual` → query embedded → top-K cosine search in Neon → passages (with marker, section path, pages) returned to the model → grounded answer streamed back with `[#id]` markers → UI renders them as numbered citations and a Sources panel.
+**Request flow:** browser → `/api/chat` (server) → model decides to call `searchManual` → vector search (Neon) + BM25 keyword search → weighted RRF fusion → passages (with marker, section path, pages) returned to the model → grounded answer streamed back with `[#id]` markers → UI renders them as numbered citations and a Sources panel.
 
 ## Key design decisions
 
@@ -23,6 +23,17 @@ Graded Mini Project 14.3, *Ship Your Own RAG* (AIM).
 - **Contextual embeddings.** Each chunk is embedded as `section path + text`. This lets a query such as "COMELEC duties" match a passage whose body never repeats the committee name.
 - **Citations are metadata, not model output.** The model only emits passage markers. Section titles and page numbers come from the database, so they cannot be hallucinated.
 - **Refusal over guessing.** The system prompt and tool description require a search before answering, and an explicit decline when the passages do not cover the question.
+
+## Evaluation (live, 20 gold questions with page-level answers)
+
+| Retrieval mode | hit@1 | hit@3 | hit@8 | MRR@8 |
+|---|---|---|---|---|
+| Vector only | 18/20 | 19/20 | 20/20 | 0.935 |
+| Keyword only (BM25) | 14/20 | 17/20 | 19/20 | 0.781 |
+| Hybrid, equal weights | 17/20 | 20/20 | 20/20 | 0.917 |
+| **Hybrid, keyword weight 0.25 (shipped)** | **18/20** | **20/20** | **20/20** | **0.950** |
+
+Reproduce: `GET /api/eval?k=1,3,8&mode=vector|keyword|hybrid&w=0.25`. With only 20 questions this is a small benchmark; the weight was chosen on the same set, so treat it as tuning evidence, not a held-out result.
 
 ## Requirements checklist
 
@@ -32,7 +43,9 @@ Graded Mini Project 14.3, *Ship Your Own RAG* (AIM).
 ## Stretch goals
 
 1. **Source-PDF deep links from citations:** every source opens `/docs/pogs-administrative-manual.pdf#page=N`.
-2. **Suggested-prompt chips:** six curated questions across the manual's main domains.
+2. **Hybrid retrieval:** pgvector + BM25 with weighted RRF. This fixed a real failure: the President's airfare subsidy is buried in a long list of duties, ranked 8th by vectors alone, and the bot refused to answer.
+
+The empty state also includes six suggested-question chips, and a retrieval evaluation endpoint (`/api/eval`) supports tuning.
 
 ## Run locally
 
