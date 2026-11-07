@@ -1,24 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  --surface: #ffffff;
-  --panel: #f6f5f8;
-  --line: #e3e0e8;
-  --fg: #1c1a22;
-  --muted: #625d6e;
-  --brand: #5b2a86;
-  --brand-soft: #efe7f6;
+  --surface: #eff1ec;
+  --panel: #fbfbf9;
+  --line: #cbd1c7;
+  --line-soft: #dfe3db;
+  --fg: #16211b;
+  --muted: #4a584f;
+  --faint: #78857c;
+  --brand: #1a5437;
+  --brand-deep: #0c2c1e;
+  --brand-soft: #e3eae2;
+  --on-brand: #ffffff;
+  --accent: #8f7129;
+  --accent-soft: #f0ead9;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --surface: #131118;
-    --panel: #1c1922;
-    --line: #2e2a36;
-    --fg: #ece9f1;
-    --muted: #a39dae;
-    --brand: #a77bd6;
-    --brand-soft: #2a2135;
+    --surface: #0d1612;
+    --panel: #141f19;
+    --line: #2b3a32;
+    --line-soft: #223029;
+    --fg: #e8ece6;
+    --muted: #a8b3aa;
+    --faint: #7d8a81;
+    --brand: #8fd0ab;
+    --brand-deep: #a9ddc0;
+    --brand-soft: #16332a;
+    --on-brand: #0e2419;
+    --accent: #cfa94e;
+    --accent-soft: #2a2416;
   }
 }
 
@@ -26,11 +38,19 @@
   --color-surface: var(--surface);
   --color-panel: var(--panel);
   --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
   --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-display-serif), Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-body-serif), Georgia, "Times New Roman", serif;
 }
 
 body {
@@ -38,13 +58,29 @@ body {
   color: var(--fg);
 }
 
+/* The band behind the coverage list stays dark green in both themes. */
+.band {
+  background: #1a5437;
+  color: #e4ece6;
+}
+@media (prefers-color-scheme: dark) {
+  .band { background: #13362a; }
+}
+.band-muted { color: #9fb8a9; }
+.band-accent { color: #d6b05c; }
+.band-rule { background: rgba(255, 255, 255, 0.15); }
+
 /* Answer typography */
 .prose-answer p { margin: 0.5rem 0; }
 .prose-answer ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
 .prose-answer ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
 .prose-answer li { margin: 0.2rem 0; }
 .prose-answer strong { font-weight: 600; }
-.prose-answer h1, .prose-answer h2, .prose-answer h3 { font-weight: 600; margin: 0.9rem 0 0.3rem; }
+.prose-answer h1, .prose-answer h2, .prose-answer h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  margin: 1rem 0 0.35rem;
+}
 
 /* Inline citation chips */
 .cite {
@@ -54,13 +90,24 @@ body {
   height: 1.15rem;
   margin-left: 2px;
   padding: 0 4px;
-  border-radius: 4px;
-  background: var(--brand-soft);
-  color: var(--brand);
+  border-radius: 3px;
+  background: var(--accent-soft);
+  color: var(--accent);
   font-size: 0.68rem;
   font-weight: 600;
   vertical-align: super;
   line-height: 1;
   text-decoration: none;
 }
-.cite:hover { background: var(--brand); color: #fff; }
+.cite:hover { background: var(--accent); color: var(--surface); }
+
+/* Seal mark */
+.seal-mark { position: relative; border: 1px solid var(--accent); }
+.seal-mark::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 9999px;
+  border: 2px solid var(--accent);
+  opacity: 0.45;
+}
