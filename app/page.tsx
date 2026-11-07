@@ -18,6 +18,15 @@ type Source = {
 };
 type SearchOutput = { query: string; results: Source[] };
 
+const COVERAGE: { label: string; ref: string }[] = [
+  { label: "Membership and good standing", ref: "Chapter 1 · pages 1–8" },
+  { label: "Governance and officers", ref: "Chapter 2 · pages 9–19" },
+  { label: "Committees", ref: "Chapter 3 · pages 20–50" },
+  { label: "PBOG and CREED", ref: "Chapters 4–5 · pages 51–60" },
+  { label: "Regions and chapters", ref: "Chapter 7 · pages 64–72" },
+  { label: "Finance, protocol and facilities", ref: "Chapters 10, 12, 15" },
+];
+
 const SUGGESTIONS: { group: string; q: string }[] = [
   { group: "Membership", q: "What are the requirements for a Diplomate to be admitted as a Fellow?" },
   { group: "Membership", q: "When is a Fellow considered in good standing?" },
@@ -84,10 +93,12 @@ export default function Home() {
       <header className="sticky top-0 z-10 border-b border-line bg-surface/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-md bg-brand text-sm font-semibold text-white">AM</div>
+            <div className="seal-mark grid h-10 w-10 shrink-0 place-items-center rounded-full">
+              <span className="font-display text-[15px] text-brand">AM</span>
+            </div>
             <div>
-              <h1 className="text-[15px] font-semibold leading-tight">POGS Administrative Manual Assistant</h1>
-              <p className="text-xs text-muted">Answers grounded in the Administrative Manual 2026, with page citations</p>
+              <h1 className="font-serif text-[17px] font-normal leading-tight">POGS Administrative Manual Assistant</h1>
+              <p className="text-xs text-faint">Answers grounded in the Administrative Manual 2026, with page citations</p>
             </div>
           </div>
           {messages.length > 0 && (
@@ -155,14 +166,14 @@ export default function Home() {
             <button
               type="submit"
               disabled={!input.trim()}
-              className="h-11 rounded-lg bg-brand px-4 text-sm font-medium text-white disabled:opacity-40"
+              className="h-11 rounded-lg bg-brand px-5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-deep disabled:opacity-40"
             >
               Ask
             </button>
           )}
         </form>
         <p className="mx-auto max-w-3xl px-4 pb-2 text-[11px] text-muted">
-          Reference aid only. The official, BOT-approved text of the manual prevails. Verify citations before acting.
+          Reference aid only. The official, BOT-approved text of the Manual prevails. Verify citations before acting.
           <span className="block">
             Developed by Richard Ronald B. Cacho, MD, MHA, Public Relations Officer (2026)
           </span>
@@ -174,44 +185,60 @@ export default function Home() {
 
 function EmptyState({ onPick }: { onPick: (q: string) => void }) {
   return (
-    <section className="pt-4">
-      <h2 className="text-2xl font-semibold tracking-tight">How can the Administrative Manual help you today?</h2>
-      <p className="mt-2 max-w-prose text-[15px] leading-relaxed text-muted">
-        Ask in plain language about POGS policies and procedures. Every answer is drawn only from the
-        <span className="font-medium text-fg"> POGS Administrative Manual 2026</span> (135 pages, 15 chapters) and cites the
-        exact section and page, with a link to the source PDF.
+    <section className="pt-2">
+      <p className="font-serif text-[19px] italic leading-none text-brand">Ask in plain language</p>
+      <h2 className="mt-4 font-display text-[clamp(2.1rem,6vw,3.5rem)] font-normal leading-[1.02] tracking-[-0.02em]">
+        How can the Administrative Manual help you today?
+      </h2>
+      <p className="mt-5 max-w-[54ch] font-serif text-[18px] leading-[1.6] text-muted">
+        Answers are drawn only from the{" "}
+        <span className="border-b border-accent pb-px text-fg">Administrative Manual 2026</span> — 135 pages, 15
+        chapters — and cite the exact section, the page, and a link to the source PDF.
       </p>
-      <h3 className="mt-6 text-xs font-semibold uppercase tracking-wider text-muted">Coverage</h3>
-      <div className="mt-2 grid grid-cols-2 gap-x-4 text-[13px] text-muted sm:grid-cols-3">
-        {["Membership & good standing", "Governance & officers", "Committees", "PBOG & CREED", "Regions & chapters", "Finance, protocol & facilities"].map(
-          (t) => (
-            <div key={t} className="flex items-center gap-2 py-1">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-              {t}
+
+      <div className="band mt-10 rounded-xl px-5 py-5 sm:px-6">
+        <h3 className="band-accent font-serif text-[18px] italic">What it covers</h3>
+        <p className="band-muted mt-1 text-[13px]">
+          All fifteen chapters are indexed. Chapter and page ranges follow the 2026 edition.
+        </p>
+        <div className="band-rule mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-lg sm:grid-cols-2">
+          {COVERAGE.map((c) => (
+            <div key={c.label} className="band px-4 py-3.5">
+              <b className="block font-serif text-[16px] font-normal leading-snug">{c.label}</b>
+              <i className="band-muted mt-1 block text-[12px] not-italic tabular-nums">{c.ref}</i>
             </div>
-          ),
-        )}
+          ))}
+        </div>
       </div>
-      <h3 className="mt-8 text-xs font-semibold uppercase tracking-wider text-muted">Try a question</h3>
-      <div className="mt-3 flex flex-col gap-2">
+
+      <h3 className="mt-12 font-serif text-[22px] font-normal tracking-tight">Try a question</h3>
+      <p className="mt-1 text-[14px] text-muted">
+        Each one is answered from the Manual, with the section and page cited.
+      </p>
+      <div className="mt-5 border-t border-fg">
         {SUGGESTIONS.map((s) => (
           <button
             key={s.q}
             onClick={() => onPick(s.q)}
-            className="group flex items-start gap-3 rounded-lg border border-line bg-surface px-3 py-2.5 text-left text-[14px] hover:border-brand hover:bg-panel"
+            className="group grid w-full grid-cols-1 items-baseline gap-y-1.5 border-b border-line-soft py-4 pr-3 text-left transition-all hover:bg-panel hover:pl-3 sm:grid-cols-[112px_1fr] sm:gap-x-5 sm:gap-y-0"
           >
-            <span className="mt-0.5 shrink-0 rounded bg-brand-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
-              {s.group}
+            <span className="text-[11px] font-semibold tracking-[0.07em] text-accent sm:pt-1">{s.group}</span>
+            <span className="font-serif text-[17px] leading-snug text-fg transition-colors group-hover:text-brand">
+              {s.q}
             </span>
-            <span>{s.q}</span>
           </button>
         ))}
       </div>
-      <p className="mt-6 text-xs text-muted">
-        Questions outside the manual&apos;s scope will be declined rather than answered from general knowledge.
-      </p>
-      <div className="mt-8 border-t border-line pt-4 text-xs text-muted">
-        Developed by <span className="font-medium text-fg">Richard Ronald B. Cacho, MD, MHA</span>
+
+      <div className="mt-10 border-l-[3px] border-accent bg-panel px-5 py-4">
+        <p className="max-w-[60ch] font-serif text-[16px] leading-relaxed text-muted">
+          Questions outside the Manual&apos;s scope are declined rather than answered from general knowledge.
+        </p>
+      </div>
+
+      <div className="mt-10 border-t border-line pt-4 text-xs leading-relaxed text-faint">
+        Developed by{" "}
+        <span className="font-serif text-[15px] text-fg">Richard Ronald B. Cacho, MD, MHA</span>
         <br />
         Public Relations Officer (2026), Philippine Obstetrical and Gynecological Society
       </div>
@@ -223,7 +250,7 @@ function UserBubble({ message }: { message: UIMessage }) {
   const text = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
   return (
     <div className="flex justify-end">
-      <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-brand px-4 py-2.5 text-[15px] text-white">
+      <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-brand px-4 py-2.5 text-[15px] text-on-brand">
         {text}
       </div>
     </div>
@@ -312,7 +339,7 @@ function AssistantMessage({
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <div className="text-[13px] font-medium">
-                      <span className="mr-1.5 inline-grid h-5 min-w-5 place-items-center rounded bg-brand px-1 text-[11px] text-white">
+                      <span className="mr-1.5 inline-grid h-5 min-w-5 place-items-center rounded bg-brand px-1 text-[11px] text-on-brand">
                         {i + 1}
                       </span>
                       {s.section}
