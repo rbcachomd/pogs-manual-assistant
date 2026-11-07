@@ -2,6 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -93,9 +94,14 @@ export default function Home() {
       <header className="sticky top-0 z-10 border-b border-line bg-surface/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="seal-mark grid h-10 w-10 shrink-0 place-items-center rounded-full">
-              <span className="font-display text-[15px] text-brand">AM</span>
-            </div>
+            <Image
+              src="/pogs-logo.png"
+              alt="Seal of the Philippine Obstetrical and Gynecological Society"
+              width={512}
+              height={512}
+              priority
+              className="h-11 w-11 shrink-0"
+            />
             <div>
               <h1 className="font-serif text-[17px] font-normal leading-tight">POGS Administrative Manual Assistant</h1>
               <p className="text-xs text-faint">Answers grounded in the Administrative Manual 2026, with page citations</p>
